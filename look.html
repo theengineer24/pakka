@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pakka — पक्का | Neutral News, Verified at the Source</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Noto+Sans:wght@400;500;600&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FBF7EF;
+    --paper: #F5EFE1;
+    --ink: #2B2118;
+    --ink-soft: #5C5044;
+    --maroon: #7A1F2B;
+    --maroon-deep: #5E1621;
+    --saffron: #D97D26;
+    --saffron-soft: #F3D9B8;
+    --green: #1F6E4A;
+    --blue: #2323A0;
+    --border: #E4D9C4;
+    --shadow: 0 2px 12px rgba(43, 33, 24, 0.06);
+    --shadow-hover: 0 8px 24px rgba(43, 33, 24, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Noto Sans', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding-top: 4px; /* offsets the fixed tricolor bar */
+  }
+
+  /* Tricolor bar — fixed so it stays visible while scrolling */
+  .tricolor-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--saffron) 0%, var(--saffron) 33%, var(--cream) 33%, var(--cream) 67%, var(--green) 67%, var(--green) 100%);
+    z-index: 200;
+  }
+
+  header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 24px 28px;
+    position: relative;
+  }
+
+  /* Ashoka Chakra — fixed to the viewport (not clipped by header) so it
+     visibly rotates AND drops as the page scrolls, instead of getting
+     clipped/carried off with the header content. */
+  .chakra-wrap {
+    position: fixed;
+    top: 2px;
+    right: -50px;
+    width: 320px;
+    height: 320px;
+    pointer-events: none;
+    z-index: 1;
+    will-change: transform;
+  }
+
+  .chakra-ring, .chakra-spokes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+  }
+
+  .chakra-ring {
+    border: 2px solid var(--blue);
+    opacity: 0.1;
+  }
+
+  .chakra-spokes {
+    background: repeating-conic-gradient(var(--blue) 0deg 3deg, transparent 3deg 15deg);
+    opacity: 0.09;
+  }
+
+  .header-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .brand h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    font-size: 42px;
+    color: var(--maroon-deep);
+    letter-spacing: 0.5px;
+  }
+
+  .brand .devanagari {
+    font-family: 'Tiro Devanagari Hindi', serif;
+    font-size: 26px;
+    color: var(--saffron);
+    font-weight: 400;
+  }
+
+  .tagline {
+    margin-top: 8px;
+    color: var(--ink-soft);
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .search-wrap {
+    max-width: 560px;
+    margin: 28px auto 0;
+    position: relative;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    padding: 14px 20px 14px 46px;
+    font-size: 16px;
+    font-family: 'Noto Sans', sans-serif;
+    border: 1.5px solid var(--border);
+    border-radius: 30px;
+    background: var(--cream);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-wrap input:focus {
+    border-color: var(--saffron);
+    box-shadow: 0 0 0 4px rgba(217, 125, 38, 0.12);
+  }
+
+  .search-wrap input::placeholder {
+    color: #A69B8B;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* Department/outlet filter chips — single horizontal scrollable row */
+  .filter-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .filter-row::-webkit-scrollbar {
+    height: 5px;
+  }
+  .filter-row::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+  }
+  .filter-row::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .filter-chip {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .filter-chip:hover {
+    border-color: var(--saffron);
+    color: var(--maroon-deep);
+  }
+
+  .filter-chip.active {
+    background: var(--maroon);
+    border-color: var(--maroon);
+    color: white;
+  }
+
+  .date-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--saffron);
+    margin: 36px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .date-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .date-heading:first-of-type { margin-top: 0; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: var(--shadow);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .outlet-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--maroon-deep);
+    background: var(--saffron-soft);
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+
+  .card-time {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.35;
+  }
+
+  .card-summary {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+
+  .card-summary.thin {
+    font-style: italic;
+    color: #A69B8B;
+  }
+
+  .source-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--maroon);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .source-link:hover {
+    border-bottom-color: var(--maroon);
+  }
+
+  .source-link svg { width: 12px; height: 12px; }
+
+  .status-msg {
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 60px 20px;
+    font-size: 15px;
+  }
+
+  .skeleton {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+
+  .skeleton-line {
+    height: 12px;
+    background: linear-gradient(90deg, var(--border) 25%, #EFE6D3 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+
+  .skeleton-line.w60 { width: 60%; }
+  .skeleton-line.w90 { width: 90%; }
+  .skeleton-line.w40 { width: 40%; height: 10px; }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  footer {
+    text-align: center;
+    padding: 28px 20px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 480px) {
+    .brand h1 { font-size: 32px; }
+    .brand .devanagari { font-size: 20px; }
+    header { padding: 28px 16px 22px; }
+    .card { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tricolor-bar"></div>
+
+<div class="chakra-wrap" id="chakraWrap">
+  <div class="chakra-ring"></div>
+  <div class="chakra-spokes"></div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>Pakka</h1>
+      <span class="devanagari">पक्का</span>
+    </div>
+    <p class="tagline">Official news, verified at the source.</p>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input id="search" type="text" placeholder="Search past news — try a ministry or topic..." autocomplete="off" />
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="filters" class="filter-row"></div>
+
+  <div id="feed">
+    <div class="skeleton">
+      <div class="skeleton-line w40"></div>
+      <div class="skeleton-line w90"></div>
+      <div class="skeleton-line w60"></div>
+    </div>
+    <div class="skeleton">
+      <div class="skeleton-line w40"></div>
+      <div class="skeleton-line w90"></div>
+      <div class="skeleton-line w60"></div>
+    </div>
+    <div class="skeleton">
+      <div class="skeleton-line w40"></div>
+      <div class="skeleton-line w90"></div>
+      <div class="skeleton-line w60"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Pakka draws directly from official Government of India sources. Every summary links back to its origin.
+</footer>
+
+<script>
+  const API_URL = "https://l57uay7pp0.execute-api.us-east-1.amazonaws.com/";
+
+  let allArticles = [];
+  let activeOutlet = null;
+  let debounceTimer;
+
+  function timeAgo(iso) {
+    const date = new Date(iso);
+    const diffMs = Date.now() - date.getTime();
+    const diffH = Math.floor(diffMs / 3600000);
+    if (diffH < 1) return "Just now";
+    if (diffH < 24) return `${diffH}h ago`;
+    const diffD = Math.floor(diffH / 24);
+    if (diffD === 1) return "Yesterday";
+    if (diffD < 7) return `${diffD} days ago`;
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function dateGroup(iso) {
+    const date = new Date(iso);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+    if (isToday) return "Today";
+    if (isYesterday) return "Yesterday";
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
+  function renderFilters(articles) {
+    const outlets = [...new Set(articles.map(a => a.outlet))].sort();
+    const container = document.getElementById('filters');
+    container.innerHTML = `<button class="filter-chip ${!activeOutlet ? 'active' : ''}" data-outlet="">All Sources</button>` +
+      outlets.map(o => `<button class="filter-chip ${activeOutlet === o ? 'active' : ''}" data-outlet="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('');
+
+    container.querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeOutlet = btn.dataset.outlet || null;
+        renderFilters(allArticles);
+        render();
+      });
+    });
+  }
+
+  function render() {
+    const feed = document.getElementById('feed');
+    let items = [...allArticles];
+
+    if (activeOutlet) {
+      items = items.filter(a => a.outlet === activeOutlet);
+    }
+
+    if (items.length === 0) {
+      feed.innerHTML = `<div class="status-msg">No articles match your search yet. Try a different term.</div>`;
+      return;
+    }
+
+    let html = '';
+    let lastGroup = null;
+
+    items.forEach(a => {
+      const group = a.fetched_at ? dateGroup(a.fetched_at) : "From the source";
+      if (group !== lastGroup) {
+        html += `<div class="date-heading">${group}</div>`;
+        lastGroup = group;
+      }
+
+      const hasSummary = a.summary && a.summary.trim().length > 0 && !a.summary.includes("Limited content");
+      const summaryHtml = hasSummary
+        ? `<p class="card-summary">${escapeHtml(a.summary)}</p>`
+        : `<p class="card-summary thin">Limited content available — visit the source for full details.</p>`;
+
+      html += `
+        <div class="card">
+          <div class="card-meta">
+            <span class="outlet-badge">${escapeHtml(a.outlet)}</span>
+            <span class="card-time">${timeAgo(a.fetched_at)}</span>
+          </div>
+          <h2 class="card-title">${escapeHtml(a.title)}</h2>
+          ${summaryHtml}
+          <a class="source-link" href="${a.source_url}" target="_blank" rel="noopener">
+            View source
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+            </svg>
+          </a>
+        </div>`;
+    });
+
+    feed.innerHTML = html;
+  }
+
+  async function loadFeed(query = "") {
+    try {
+      const url = query ? `${API_URL}?q=${encodeURIComponent(query)}` : API_URL;
+      const res = await fetch(url);
+      const data = await res.json();
+      allArticles = data.sort((a, b) => new Date(b.fetched_at) - new Date(a.fetched_at));
+      renderFilters(allArticles);
+      render();
+    } catch (err) {
+      document.getElementById('feed').innerHTML = `<div class="status-msg">Couldn't load news right now. Please refresh.</div>`;
+    }
+  }
+
+  document.getElementById('search').addEventListener('input', (e) => {
+    clearTimeout(debounceTimer);
+    const val = e.target.value.trim();
+    debounceTimer = setTimeout(() => loadFeed(val), 350);
+  });
+
+  loadFeed();
+
+  // Ashoka Chakra: fixed to the viewport, so it visibly rotates AND drops
+  // down the screen as the user scrolls (rotation is unbounded; the drop
+  // is capped so it settles instead of drifting off past the fold forever).
+  const chakraWrap = document.getElementById('chakraWrap');
+  const MAX_DROP = 260; // px — how far down the chakra is allowed to travel
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const rotation = y * 0.3;                 // keeps spinning, no cap
+    const drop = Math.min(y * 0.5, MAX_DROP);  // eases to a stop
+
+    chakraWrap.style.transform = `translateY(${drop}px) rotate(${rotation}deg)`;
+  }, { passive: true });
+</script>
+
+</body>
+</html>
